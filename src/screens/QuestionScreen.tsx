@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,9 @@ import {
   Modal,
   TouchableOpacity,
   Animated,
+  ToastAndroid,
+  Platform,
+  Alert,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QuestionCard } from '../components/QuestionCard';
@@ -15,15 +18,91 @@ import { Header } from '../components/Header';
 import { ProgressHeader } from '../components/ProgressHeader';
 import { loadQuestions } from '../utils/loadQuestions';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+
+const BOOKMARKS_STORAGE_KEY = 'bookmarkedQuestionIds';
 
 export const QuestionScreen: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const params = useLocalSearchParams();
+  const questions = loadQuestions();
+
+  // URLパラメータからquestionIdを取得して初期インデックスを設定
+  const initialQuestionId = params.questionId ? parseInt(params.questionId as string, 10) : null;
+  const initialIndex = initialQuestionId
+    ? Math.max(
+        0,
+        questions.findIndex((q) => q.id === initialQuestionId),
+      )
+    : 0;
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isJapanese, setIsJapanese] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
-  const questions = loadQuestions();
+  const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
 
   // メニューアニメーション用
   const slideAnim = useRef(new Animated.Value(-300)).current;
+
+  // ブックマークデータの読み込み
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      try {
+        const storedBookmarks = await AsyncStorage.getItem(BOOKMARKS_STORAGE_KEY);
+        if (storedBookmarks) {
+          setBookmarkedIds(JSON.parse(storedBookmarks));
+        }
+      } catch (error) {
+        console.error('ブックマークの読み込みエラー:', error);
+      }
+    };
+
+    loadBookmarks();
+  }, []);
+
+  // ブックマークデータの保存
+  const saveBookmarks = async (ids: number[]) => {
+    try {
+      await AsyncStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(ids));
+    } catch (error) {
+      console.error('ブックマークの保存エラー:', error);
+    }
+  };
+
+  // 現在の問題がブックマークされているかどうか
+  const isCurrentQuestionBookmarked = () => {
+    return bookmarkedIds.includes(questions[currentIndex].id);
+  };
+
+  // ブックマークのトグル
+  const toggleBookmark = () => {
+    const currentQuestionId = questions[currentIndex].id;
+    let newBookmarkedIds: number[];
+
+    if (isCurrentQuestionBookmarked()) {
+      // ブックマークを解除
+      newBookmarkedIds = bookmarkedIds.filter((id) => id !== currentQuestionId);
+      showToast('ブックマークを解除しました');
+    } else {
+      // ブックマークを追加
+      newBookmarkedIds = [...bookmarkedIds, currentQuestionId];
+      showToast('ブックマークに追加しました');
+    }
+
+    setBookmarkedIds(newBookmarkedIds);
+    saveBookmarks(newBookmarkedIds);
+  };
+
+  // トースト表示（プラットフォームに応じて）
+  const showToast = (message: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      // iOS用の通知（Alertを使用）
+      Alert.alert('', message, [{ text: 'OK' }], { cancelable: true });
+    }
+  };
 
   const handleSwipeLeft = () => {
     if (currentIndex < questions.length - 1) {
@@ -73,6 +152,12 @@ export const QuestionScreen: React.FC = () => {
     }
   };
 
+  // ブックマーク一覧ページに移動
+  const navigateToBookmarks = () => {
+    toggleMenu();
+    router.push('/bookmarks');
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -92,6 +177,8 @@ export const QuestionScreen: React.FC = () => {
               question={questions[currentIndex]}
               isJapanese={isJapanese}
               onToggleLanguage={toggleLanguage}
+              isBookmarked={isCurrentQuestionBookmarked()}
+              onToggleBookmark={toggleBookmark}
             />
 
             <NavigationButtons
@@ -105,50 +192,26 @@ export const QuestionScreen: React.FC = () => {
 
         {/* サイドメニュー */}
         {menuVisible && (
-          <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={toggleMenu}>
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={toggleMenu}>
             <Animated.View
               style={[
-                styles.menuContainer,
+                styles.menu,
                 {
                   transform: [{ translateX: slideAnim }],
                 },
               ]}
             >
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
+              {/* メニュー項目 */}
+              <View style={styles.menuHeader}>
+                <Text style={styles.menuTitle}>メニュー</Text>
+              </View>
+              <TouchableOpacity style={styles.menuItem} onPress={navigateToBookmarks}>
+                <Ionicons name="star" size={20} color="#00A3FF" style={styles.menuIcon} />
+                <Text style={styles.menuItemText}>ブックマーク一覧</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="settings-outline" size={20} color="#555" style={styles.menuIcon} />
                 <Text style={styles.menuItemText}>設定</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>カテゴリー</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>お気に入り</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>ヘルプ</Text>
               </TouchableOpacity>
             </Animated.View>
           </TouchableOpacity>
@@ -161,38 +224,53 @@ export const QuestionScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F8F8',
   },
   content: {
     flex: 1,
   },
-  menuOverlay: {
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    zIndex: 1000,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 10,
   },
-  menuContainer: {
+  menu: {
     position: 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
-    width: 300,
+    width: 250,
     backgroundColor: '#FFFFFF',
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    zIndex: 1001,
+    zIndex: 20,
+    paddingTop: 20,
   },
-  menuItem: {
-    paddingVertical: 15,
+  menuHeader: {
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
+    paddingBottom: 12,
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  menuTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  menuIcon: {
+    marginRight: 12,
   },
   menuItemText: {
-    fontSize: 18,
-    color: '#333333',
+    fontSize: 16,
+    color: '#444444',
   },
 });

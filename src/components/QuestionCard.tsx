@@ -1,22 +1,40 @@
 import React from 'react';
 import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Question } from '../utils/loadQuestions';
+import { Ionicons } from '@expo/vector-icons';
 
 interface QuestionCardProps {
   question: Question;
   isJapanese: boolean;
   onToggleLanguage: () => void;
+  isBookmarked: boolean;
+  onToggleBookmark: () => void;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   isJapanese,
   onToggleLanguage,
+  isBookmarked,
+  onToggleBookmark,
 }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
-        <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
+        <TouchableOpacity
+          style={styles.bookmarkButton}
+          onPress={onToggleBookmark}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={isBookmarked ? 'star' : 'star-outline'}
+            size={24}
+            color={isBookmarked ? '#FFD700' : '#AAAAAA'}
+          />
+        </TouchableOpacity>
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -39,7 +57,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    marginBottom: 20,
+    position: 'relative',
+  },
+  bookmarkButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 5,
+    zIndex: 1,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 120,
   },
   text: {
     fontSize: 28,
