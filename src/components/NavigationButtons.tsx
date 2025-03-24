@@ -31,7 +31,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         disabled={isLast}
         activeOpacity={0.7}
       >
-        <Text style={styles.buttonText}>次へ</Text>
+        <Text style={styles.nextButtonText}>次へ</Text>
       </TouchableOpacity>
     </View>
   );
@@ -68,6 +68,8 @@ const styles = StyleSheet.create({
     color: '#00A3FF',
   },
   nextButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
   },
 });
