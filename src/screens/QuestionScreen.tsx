@@ -16,6 +16,7 @@ import { QuestionCard } from '../components/QuestionCard';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { Header } from '../components/Header';
 import { ProgressHeader } from '../components/ProgressHeader';
+import { SideMenu } from '../components/SideMenu';
 import { loadQuestions } from '../utils/loadQuestions';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -158,6 +159,26 @@ export const QuestionScreen: React.FC = () => {
     router.push('/bookmarks');
   };
 
+  // メニュー項目の定義
+  const menuItems = [
+    {
+      id: 'bookmarks',
+      icon: 'star',
+      label: 'ブックマーク一覧',
+      iconColor: '#00A3FF',
+      onPress: navigateToBookmarks,
+    },
+    {
+      id: 'settings',
+      icon: 'settings-outline',
+      label: '設定',
+      onPress: () => {
+        toggleMenu();
+        // 設定画面への遷移（未実装）
+      },
+    },
+  ];
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -190,32 +211,13 @@ export const QuestionScreen: React.FC = () => {
           </View>
         </PanGestureHandler>
 
-        {/* サイドメニュー */}
-        {menuVisible && (
-          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={toggleMenu}>
-            <Animated.View
-              style={[
-                styles.menu,
-                {
-                  transform: [{ translateX: slideAnim }],
-                },
-              ]}
-            >
-              {/* メニュー項目 */}
-              <View style={styles.menuHeader}>
-                <Text style={styles.menuTitle}>メニュー</Text>
-              </View>
-              <TouchableOpacity style={styles.menuItem} onPress={navigateToBookmarks}>
-                <Ionicons name="star" size={20} color="#00A3FF" style={styles.menuIcon} />
-                <Text style={styles.menuItemText}>ブックマーク一覧</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="settings-outline" size={20} color="#555" style={styles.menuIcon} />
-                <Text style={styles.menuItemText}>設定</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </TouchableOpacity>
-        )}
+        {/* サイドメニューをコンポーネントとして使用 */}
+        <SideMenu
+          visible={menuVisible}
+          onClose={toggleMenu}
+          slideAnim={slideAnim}
+          menuItems={menuItems}
+        />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
