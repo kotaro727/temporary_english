@@ -18,14 +18,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
         <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
       </TouchableOpacity>
-
-      {/* 下部のプログレスバー */}
-      <View style={styles.progressBarContainer}>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '70%' }]} />
-        </View>
-        <Text style={styles.hintText}>タップで{isJapanese ? '英語' : '日本語'}を表示</Text>
-      </View>
     </View>
   );
 };

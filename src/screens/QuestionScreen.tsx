@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QuestionCard } from '../components/QuestionCard';
 import { NavigationButtons } from '../components/NavigationButtons';
 import { Header } from '../components/Header';
+import { ProgressHeader } from '../components/ProgressHeader';
 import { loadQuestions } from '../utils/loadQuestions';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 
@@ -76,19 +77,16 @@ export const QuestionScreen: React.FC = () => {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         {/* ヘッダー */}
-        <Header title="" onMenuPress={toggleMenu} />
+        <Header title="瞬間英作文" onMenuPress={toggleMenu} />
 
         <PanGestureHandler onGestureEvent={handleGesture}>
           <View style={styles.content}>
             {/* 進捗表示 */}
-            <View style={styles.header}>
-              <View style={styles.progressContainer}>
-                <Text style={styles.modeIndicator}>{isJapanese ? 'JP' : 'EN'}</Text>
-              </View>
-              <Text style={styles.progressText}>
-                {currentIndex + 1} / {questions.length}
-              </Text>
-            </View>
+            <ProgressHeader
+              currentIndex={currentIndex}
+              totalQuestions={questions.length}
+              isJapanese={isJapanese}
+            />
 
             <QuestionCard
               question={questions[currentIndex]}
@@ -167,32 +165,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  progressContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#00A3FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modeIndicator: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  progressText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#00A3FF',
   },
   menuOverlay: {
     position: 'absolute',
