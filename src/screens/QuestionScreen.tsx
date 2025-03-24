@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,9 @@ import {
   Modal,
   TouchableOpacity,
   Animated,
+  ToastAndroid,
+  Platform,
+  Alert,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QuestionCard } from '../components/QuestionCard';
@@ -15,15 +18,78 @@ import { Header } from '../components/Header';
 import { ProgressHeader } from '../components/ProgressHeader';
 import { loadQuestions } from '../utils/loadQuestions';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BOOKMARKS_STORAGE_KEY = 'bookmarkedQuestionIds';
 
 export const QuestionScreen: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isJapanese, setIsJapanese] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
   const questions = loadQuestions();
 
   // メニューアニメーション用
   const slideAnim = useRef(new Animated.Value(-300)).current;
+
+  // ブックマークデータの読み込み
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      try {
+        const storedBookmarks = await AsyncStorage.getItem(BOOKMARKS_STORAGE_KEY);
+        if (storedBookmarks) {
+          setBookmarkedIds(JSON.parse(storedBookmarks));
+        }
+      } catch (error) {
+        console.error('ブックマークの読み込みエラー:', error);
+      }
+    };
+
+    loadBookmarks();
+  }, []);
+
+  // ブックマークデータの保存
+  const saveBookmarks = async (ids: number[]) => {
+    try {
+      await AsyncStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(ids));
+    } catch (error) {
+      console.error('ブックマークの保存エラー:', error);
+    }
+  };
+
+  // 現在の問題がブックマークされているかどうか
+  const isCurrentQuestionBookmarked = () => {
+    return bookmarkedIds.includes(questions[currentIndex].id);
+  };
+
+  // ブックマークのトグル
+  const toggleBookmark = () => {
+    const currentQuestionId = questions[currentIndex].id;
+    let newBookmarkedIds: number[];
+
+    if (isCurrentQuestionBookmarked()) {
+      // ブックマークを解除
+      newBookmarkedIds = bookmarkedIds.filter((id) => id !== currentQuestionId);
+      showToast('ブックマークを解除しました');
+    } else {
+      // ブックマークを追加
+      newBookmarkedIds = [...bookmarkedIds, currentQuestionId];
+      showToast('ブックマークに追加しました');
+    }
+
+    setBookmarkedIds(newBookmarkedIds);
+    saveBookmarks(newBookmarkedIds);
+  };
+
+  // トースト表示（プラットフォームに応じて）
+  const showToast = (message: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      // iOS用の通知（Alertを使用）
+      Alert.alert('', message, [{ text: 'OK' }], { cancelable: true });
+    }
+  };
 
   const handleSwipeLeft = () => {
     if (currentIndex < questions.length - 1) {
@@ -92,6 +158,8 @@ export const QuestionScreen: React.FC = () => {
               question={questions[currentIndex]}
               isJapanese={isJapanese}
               onToggleLanguage={toggleLanguage}
+              isBookmarked={isCurrentQuestionBookmarked()}
+              onToggleBookmark={toggleBookmark}
             />
 
             <NavigationButtons
@@ -105,50 +173,24 @@ export const QuestionScreen: React.FC = () => {
 
         {/* サイドメニュー */}
         {menuVisible && (
-          <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={toggleMenu}>
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={toggleMenu}>
             <Animated.View
               style={[
-                styles.menuContainer,
+                styles.menu,
                 {
                   transform: [{ translateX: slideAnim }],
                 },
               ]}
             >
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
+              {/* メニュー項目 */}
+              <View style={styles.menuHeader}>
+                <Text style={styles.menuTitle}>メニュー</Text>
+              </View>
+              <TouchableOpacity style={styles.menuItem}>
+                <Text style={styles.menuItemText}>ブックマーク一覧</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem}>
                 <Text style={styles.menuItemText}>設定</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>カテゴリー</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>お気に入り</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  toggleMenu();
-                  // ここにメニュー項目の処理を追加
-                }}
-              >
-                <Text style={styles.menuItemText}>ヘルプ</Text>
               </TouchableOpacity>
             </Animated.View>
           </TouchableOpacity>
@@ -166,7 +208,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  menuOverlay: {
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -175,7 +217,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     zIndex: 1000,
   },
-  menuContainer: {
+  menu: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -185,6 +227,14 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     zIndex: 1001,
+  },
+  menuHeader: {
+    paddingBottom: 20,
+  },
+  menuTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333333',
   },
   menuItem: {
     paddingVertical: 15,
