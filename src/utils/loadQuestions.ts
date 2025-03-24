@@ -1,11 +1,15 @@
-import questions from '../../assets/questions.json';
+import questionsData from '../../assets/questions.json';
 
-interface Question {
-  question: string;
-  options: string[];
-  correctAnswer: string;
+export interface Question {
+  id: number;
+  jp: string;
+  en: string;
 }
 
 export const loadQuestions = (): Question[] => {
-  return questions as Question[];
+  return questionsData.map(question => ({
+    id: question.id,
+    jp: question.jp,
+    en: question.en
+  }));
 };

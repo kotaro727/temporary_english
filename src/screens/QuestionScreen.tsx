@@ -1,33 +1,42 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import QuestionCard from '../components/QuestionCard';
-import NavigationButtons from '../components/NavigationButtons';
+import { StyleSheet, View } from 'react-native';
+import { QuestionCard } from '../components/QuestionCard';
+import { NavigationButtons } from '../components/NavigationButtons';
 import { loadQuestions } from '../utils/loadQuestions';
 
-const QuestionScreen: React.FC = () => {
+export const QuestionScreen: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isJapanese, setIsJapanese] = useState(true);
   const questions = loadQuestions();
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
     }
   };
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1);
     }
+  };
+
+  const toggleLanguage = () => {
+    setIsJapanese(prev => !prev);
   };
 
   return (
     <View style={styles.container}>
-      <QuestionCard question={questions[currentIndex].question} />
+      <QuestionCard
+        question={questions[currentIndex]}
+        isJapanese={isJapanese}
+        onToggleLanguage={toggleLanguage}
+      />
       <NavigationButtons
+        onPrev={handlePrev}
         onNext={handleNext}
-        onPrevious={handlePrevious}
-        showPrevious={currentIndex > 0}
-        showNext={currentIndex < questions.length - 1}
+        isFirst={currentIndex === 0}
+        isLast={currentIndex === questions.length - 1}
       />
     </View>
   );
@@ -36,8 +45,7 @@ const QuestionScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-  },
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF'
+  }
 });
-
-export default QuestionScreen;

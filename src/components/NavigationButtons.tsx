@@ -1,31 +1,36 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
 
 interface NavigationButtonsProps {
-  onPrevious: () => void;
+  onPrev: () => void;
   onNext: () => void;
-  showPrevious: boolean;
-  showNext: boolean;
+  isFirst: boolean;
+  isLast: boolean;
 }
 
-const NavigationButtons: React.FC<NavigationButtonsProps> = ({
-  onPrevious,
+export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
+  onPrev,
   onNext,
-  showPrevious,
-  showNext,
+  isFirst,
+  isLast
 }) => {
   return (
     <View style={styles.container}>
-      {showPrevious && (
-        <TouchableOpacity style={styles.button} onPress={onPrevious}>
-          <Text style={styles.buttonText}>Previous</Text>
-        </TouchableOpacity>
-      )}
-      {showNext && (
-        <TouchableOpacity style={styles.button} onPress={onNext}>
-          <Text style={styles.buttonText}>Next</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={[styles.button, isFirst && styles.disabled]}
+        onPress={onPrev}
+        disabled={isFirst}
+      >
+        <Text style={styles.buttonText}>前へ</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[styles.button, isLast && styles.disabled]}
+        onPress={onNext}
+        disabled={isLast}
+      >
+        <Text style={styles.buttonText}>次へ</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -34,19 +39,21 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    padding: 20,
+    paddingBottom: 40
   },
   button: {
-    padding: 12,
     backgroundColor: '#007AFF',
-    borderRadius: 8,
+    padding: 15,
+    borderRadius: 10,
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: 'center'
+  },
+  disabled: {
+    backgroundColor: '#CCCCCC'
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
+    color: '#FFFFFF',
+    fontSize: 16
+  }
 });
-
-export default NavigationButtons;

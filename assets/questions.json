@@ -1,52 +1,27 @@
 [
   {
     "id": 1,
-    "jp": "彼は毎日走ります。",
-    "en": "He runs every day."
+    "jp": "これはペンです",
+    "en": "This is a pen"
   },
   {
     "id": 2,
-    "jp": "私は昨日ピザを食べました。",
-    "en": "I ate pizza yesterday."
+    "jp": "今日は良い天気です", 
+    "en": "It's a nice day today"
   },
   {
     "id": 3,
-    "jp": "あなたは英語を話せますか？",
-    "en": "Can you speak English?"
+    "jp": "私はプログラマーです",
+    "en": "I am a programmer"
   },
   {
     "id": 4,
-    "jp": "彼女は犬が好きです。",
-    "en": "She likes dogs."
+    "jp": "コーヒーを飲みますか？",
+    "en": "Would you like some coffee?"
   },
   {
     "id": 5,
-    "jp": "私たちは今朝早く起きました。",
-    "en": "We got up early this morning."
-  },
-  {
-    "id": 6,
-    "jp": "彼らは昨日サッカーをしました。",
-    "en": "They played soccer yesterday."
-  },
-  {
-    "id": 7,
-    "jp": "これはあなたのペンですか？",
-    "en": "Is this your pen?"
-  },
-  {
-    "id": 8,
-    "jp": "彼は本を読んでいます。",
-    "en": "He is reading a book."
-  },
-  {
-    "id": 9,
-    "jp": "私は東京に行ったことがあります。",
-    "en": "I have been to Tokyo."
-  },
-  {
-    "id": 10,
-    "jp": "彼女は明日図書館に行くつもりです。",
-    "en": "She is going to the library tomorrow."
+    "jp": "明日は何時に起きますか？",
+    "en": "What time will you wake up tomorrow?"
   }
 ]

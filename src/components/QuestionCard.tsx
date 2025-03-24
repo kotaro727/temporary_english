@@ -1,29 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Question } from '../utils/loadQuestions';
 
 interface QuestionCardProps {
-  question: string;
+  question: Question;
+  isJapanese: boolean;
+  onToggleLanguage: () => void;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+export const QuestionCard: React.FC<QuestionCardProps> = ({
+  question,
+  isJapanese,
+  onToggleLanguage
+}) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.questionText}>{question}</Text>
-    </View>
+    <TouchableOpacity 
+      style={styles.container}
+      onPress={onToggleLanguage}
+    >
+      <Text style={styles.text}>
+        {isJapanese ? question.jp : question.en}
+      </Text>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 16,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
   },
-  questionText: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
+  text: {
+    fontSize: 24,
+    textAlign: 'center',
+    lineHeight: 32
+  }
 });
-
-export default QuestionCard;

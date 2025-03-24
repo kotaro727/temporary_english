@@ -1,15 +1,20 @@
-import { Text, View } from "react-native";
+import React from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, SafeAreaView } from 'react-native';
+import { QuestionScreen } from '../src/screens/QuestionScreen';
 
-export default function Index() {
+export default function App() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="auto" />
+      <QuestionScreen />
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
+  }
+});
