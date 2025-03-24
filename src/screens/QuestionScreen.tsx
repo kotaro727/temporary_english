@@ -14,12 +14,14 @@ export const QuestionScreen: React.FC = () => {
   const handleSwipeLeft = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(prev => prev + 1);
+      setIsJapanese(true);
     }
   };
 
   const handleSwipeRight = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
+      setIsJapanese(true);
     }
   };
 
@@ -31,8 +33,10 @@ export const QuestionScreen: React.FC = () => {
     const { translationX } = event.nativeEvent;
     if (translationX > 50) {
       handleSwipeRight();
+      setIsJapanese(true);
     } else if (translationX < -50) {
       handleSwipeLeft();
+      setIsJapanese(true);
     }
   };
 
