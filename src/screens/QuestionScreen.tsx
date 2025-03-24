@@ -19,15 +19,28 @@ import { ProgressHeader } from '../components/ProgressHeader';
 import { loadQuestions } from '../utils/loadQuestions';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const BOOKMARKS_STORAGE_KEY = 'bookmarkedQuestionIds';
 
 export const QuestionScreen: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const params = useLocalSearchParams();
+  const questions = loadQuestions();
+
+  // URLパラメータからquestionIdを取得して初期インデックスを設定
+  const initialQuestionId = params.questionId ? parseInt(params.questionId as string, 10) : null;
+  const initialIndex = initialQuestionId
+    ? Math.max(
+        0,
+        questions.findIndex((q) => q.id === initialQuestionId),
+      )
+    : 0;
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isJapanese, setIsJapanese] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<number[]>([]);
-  const questions = loadQuestions();
 
   // メニューアニメーション用
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -139,6 +152,12 @@ export const QuestionScreen: React.FC = () => {
     }
   };
 
+  // ブックマーク一覧ページに移動
+  const navigateToBookmarks = () => {
+    toggleMenu();
+    router.push('/bookmarks');
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -186,10 +205,12 @@ export const QuestionScreen: React.FC = () => {
               <View style={styles.menuHeader}>
                 <Text style={styles.menuTitle}>メニュー</Text>
               </View>
-              <TouchableOpacity style={styles.menuItem}>
+              <TouchableOpacity style={styles.menuItem} onPress={navigateToBookmarks}>
+                <Ionicons name="star" size={20} color="#00A3FF" style={styles.menuIcon} />
                 <Text style={styles.menuItemText}>ブックマーク一覧</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem}>
+                <Ionicons name="settings-outline" size={20} color="#555" style={styles.menuIcon} />
                 <Text style={styles.menuItemText}>設定</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -203,7 +224,7 @@ export const QuestionScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F8F8',
   },
   content: {
     flex: 1,
@@ -214,35 +235,42 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    zIndex: 1000,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 10,
   },
   menu: {
     position: 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
-    width: 300,
+    width: 250,
     backgroundColor: '#FFFFFF',
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    zIndex: 1001,
+    zIndex: 20,
+    paddingTop: 20,
   },
   menuHeader: {
-    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+    paddingBottom: 12,
+    marginBottom: 12,
+    paddingHorizontal: 20,
   },
   menuTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#333333',
   },
   menuItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  menuIcon: {
+    marginRight: 12,
   },
   menuItemText: {
-    fontSize: 18,
-    color: '#333333',
+    fontSize: 16,
+    color: '#444444',
   },
 });

@@ -21,21 +21,20 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
-        <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity
-            style={styles.bookmarkButton}
-            onPress={onToggleBookmark}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons
-              name={isBookmarked ? 'star' : 'star-outline'}
-              size={24}
-              color={isBookmarked ? '#FFD700' : '#AAAAAA'}
-            />
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.bookmarkButton}
+          onPress={onToggleBookmark}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={isBookmarked ? 'star' : 'star-outline'}
+            size={24}
+            color={isBookmarked ? '#FFD700' : '#AAAAAA'}
+          />
+        </TouchableOpacity>
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
         </View>
-        <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -58,14 +57,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 10,
+    position: 'relative',
   },
   bookmarkButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
     padding: 5,
+    zIndex: 1,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 120,
   },
   text: {
     fontSize: 28,
