@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     width: '100%',
-    aspectRatio: 1.5, // 幅と高さの比率を固定
+    minHeight: 200,
+    // aspectRatio: 1.5, // 幅と高さの比率を固定
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
