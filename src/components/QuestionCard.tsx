@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Text, StyleSheet, TouchableOpacity, View, Animated, Dimensions } from 'react-native';
 import { Question } from '../utils/loadQuestions';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,6 +9,7 @@ interface QuestionCardProps {
   onToggleLanguage: () => void;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
+  questionId: number;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -17,66 +18,135 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   onToggleLanguage,
   isBookmarked,
   onToggleBookmark,
+  questionId,
 }) => {
+  // アニメーション用の値
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  // 問題が変わるたびにアニメーションを実行
+  useEffect(() => {
+    // 初期値に戻す
+    fadeAnim.setValue(0);
+    slideAnim.setValue(50);
+
+    // アニメーションを順番に実行
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [questionId, fadeAnim, slideAnim]);
+
+  // 表示するテキスト
+  const displayText = isJapanese ? question.jp : question.en;
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
-        <TouchableOpacity
-          style={styles.bookmarkButton}
-          onPress={onToggleBookmark}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name={isBookmarked ? 'star' : 'star-outline'}
-            size={24}
-            color={isBookmarked ? '#FFD700' : '#AAAAAA'}
-          />
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+          width: '100%',
+        }}
+      >
+        <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
+          {/* ブックマークボタン */}
+          <TouchableOpacity
+            style={styles.bookmarkButton}
+            onPress={onToggleBookmark}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name={isBookmarked ? 'star' : 'star-outline'}
+              size={24}
+              color={isBookmarked ? '#FFD700' : '#AAAAAA'}
+            />
+          </TouchableOpacity>
+
+          {/* テキストコンテナ */}
+          <View style={styles.textContainer}>
+            <Text
+              style={[
+                styles.text,
+                // 文字数に応じてフォントサイズを動的に調整
+                displayText.length > 30 ? styles.smallerText : null,
+                displayText.length > 50 ? styles.smallestText : null,
+              ]}
+              adjustsFontSizeToFit
+              numberOfLines={5}
+            >
+              {displayText}
+            </Text>
+          </View>
         </TouchableOpacity>
-        <View style={styles.textContainer}>
-          <Text style={styles.text}>{isJapanese ? question.jp : question.en}</Text>
-        </View>
-      </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 };
+
+// 画面の幅を取得
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 30,
+    padding: 20,
     width: '100%',
+    aspectRatio: 1.5, // 幅と高さの比率を固定
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
     position: 'relative',
+    // フレックスを使用して内部要素を配置
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bookmarkButton: {
     position: 'absolute',
     top: 10,
     right: 10,
     padding: 5,
-    zIndex: 1,
+    zIndex: 2,
   },
   textContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: 120,
+    justifyContent: 'center', // 上下中央
+    alignItems: 'center', // 左右中央
+    width: '100%',
+    paddingHorizontal: 10,
+    paddingTop: 20, // ブックマークボタンのスペース確保
   },
   text: {
-    fontSize: 28,
+    fontSize: width < 350 ? 22 : 26,
     textAlign: 'center',
-    lineHeight: 42,
+    lineHeight: width < 350 ? 34 : 38,
     fontWeight: '500',
+  },
+  smallerText: {
+    fontSize: width < 350 ? 20 : 22,
+    lineHeight: width < 350 ? 30 : 34,
+  },
+  smallestText: {
+    fontSize: width < 350 ? 18 : 20,
+    lineHeight: width < 350 ? 26 : 30,
   },
   progressBarContainer: {
     width: '100%',
