@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Text, StyleSheet, TouchableOpacity, View, Animated, Dimensions } from 'react-native';
 import { Question } from '../utils/loadQuestions';
 import { Ionicons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 
 interface QuestionCardProps {
   question: Question;
@@ -24,6 +25,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
+  // スピーチの再生中かどうかの状態
+  const [speaking, setSpeaking] = React.useState(false);
+
   // 問題が変わるたびにアニメーションを実行
   useEffect(() => {
     // 初期値に戻す
@@ -43,10 +47,41 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         useNativeDriver: true,
       }),
     ]).start();
+
+    // クリーンアップ - 音声を停止
+    return () => {
+      Speech.stop();
+      setSpeaking(false);
+    };
   }, [questionId, fadeAnim, slideAnim]);
+
+  // 言語切り替え時に音声を停止
+  useEffect(() => {
+    Speech.stop();
+    setSpeaking(false);
+  }, [isJapanese]);
 
   // 表示するテキスト
   const displayText = isJapanese ? question.jp : question.en;
+
+  // 音声再生関数
+  const speak = () => {
+    // 英語テキストのみ再生
+    if (speaking) {
+      Speech.stop();
+      setSpeaking(false);
+      return;
+    }
+
+    setSpeaking(true);
+    Speech.speak(question.en, {
+      language: 'en-US',
+      pitch: 1.0,
+      rate: 0.9, // ゆっくり目
+      onDone: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -70,6 +105,21 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               color={isBookmarked ? '#FFD700' : '#AAAAAA'}
             />
           </TouchableOpacity>
+
+          {/* 音声再生ボタン - 英語表示時のみ表示 */}
+          {!isJapanese && (
+            <TouchableOpacity
+              style={styles.speakerButton}
+              onPress={speak}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={speaking ? 'volume-high' : 'volume-medium'}
+                size={24}
+                color={speaking ? '#00A3FF' : '#AAAAAA'}
+              />
+            </TouchableOpacity>
+          )}
 
           {/* テキストコンテナ */}
           <View style={styles.textContainer}>
@@ -107,8 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     width: '100%',
-    minHeight: 200,
-    // aspectRatio: 1.5, // 幅と高さの比率を固定
+    aspectRatio: 1.5, // 幅と高さの比率を固定
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -124,6 +173,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
+    padding: 5,
+    zIndex: 2,
+  },
+  speakerButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
     padding: 5,
     zIndex: 2,
   },
