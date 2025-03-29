@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Animated, Dimensions } from 'react-native';
+import { Text, TouchableOpacity, View, Animated } from 'react-native';
+import * as Speech from 'expo-speech';
 import { Question } from '../utils/loadQuestions';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -49,37 +50,55 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   const displayText = isJapanese ? question.jp : question.en;
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center items-center p-4">
       <Animated.View
+        className="w-full"
         style={{
           opacity: fadeAnim,
           transform: [{ translateY: slideAnim }],
-          width: '100%',
         }}
       >
-        <TouchableOpacity style={styles.card} onPress={onToggleLanguage} activeOpacity={0.8}>
-          {/* ブックマークボタン */}
-          <TouchableOpacity
-            style={styles.bookmarkButton}
-            onPress={onToggleBookmark}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons
-              name={isBookmarked ? 'star' : 'star-outline'}
-              size={24}
-              color={isBookmarked ? '#FFD700' : '#AAAAAA'}
-            />
-          </TouchableOpacity>
+        <TouchableOpacity 
+          className="bg-white rounded-2xl p-5 w-full min-h-[200px] shadow-md shadow-black/10 relative flex justify-center items-center"
+          onPress={onToggleLanguage} 
+          activeOpacity={0.8}
+        >
+          {/* ボタン群 */}
+          <View className="absolute top-2 right-2 flex-row gap-2 z-10">
+            {/* スピーカーボタン (英語表示時のみ) */}
+            {!isJapanese && (
+              <TouchableOpacity
+                onPress={() => Speech.speak(question.en, { language: 'en' })}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name="volume-high-outline"
+                  size={24}
+                  color="#555555"
+                />
+              </TouchableOpacity>
+            )}
+            {/* ブックマークボタン */}
+            <TouchableOpacity
+              onPress={onToggleBookmark}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={isBookmarked ? 'star' : 'star-outline'}
+                size={24}
+                color={isBookmarked ? '#FFD700' : '#AAAAAA'}
+              />
+            </TouchableOpacity>
+          </View>
 
           {/* テキストコンテナ */}
-          <View style={styles.textContainer}>
+          <View className="flex-1 justify-center items-center w-full px-2.5 pt-5">
             <Text
-              style={[
-                styles.text,
-                // 文字数に応じてフォントサイズを動的に調整
-                displayText.length > 30 ? styles.smallerText : null,
-                displayText.length > 50 ? styles.smallestText : null,
-              ]}
+              className={`text-center font-medium 
+                ${displayText.length > 30 ? 'text-lg' : 'text-xl'} 
+                ${displayText.length > 50 ? 'text-base' : ''}
+                md:text-2xl md:leading-10
+                leading-8`}
               adjustsFontSizeToFit
               numberOfLines={5}
             >
@@ -91,84 +110,3 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     </View>
   );
 };
-
-// 画面の幅を取得
-const { width, height } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    width: '100%',
-    minHeight: 200,
-    // aspectRatio: 1.5, // 幅と高さの比率を固定
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    position: 'relative',
-    // フレックスを使用して内部要素を配置
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bookmarkButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 5,
-    zIndex: 2,
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center', // 上下中央
-    alignItems: 'center', // 左右中央
-    width: '100%',
-    paddingHorizontal: 10,
-    paddingTop: 20, // ブックマークボタンのスペース確保
-  },
-  text: {
-    fontSize: width < 350 ? 22 : 26,
-    textAlign: 'center',
-    lineHeight: width < 350 ? 34 : 38,
-    fontWeight: '500',
-  },
-  smallerText: {
-    fontSize: width < 350 ? 20 : 22,
-    lineHeight: width < 350 ? 30 : 34,
-  },
-  smallestText: {
-    fontSize: width < 350 ? 18 : 20,
-    lineHeight: width < 350 ? 26 : 30,
-  },
-  progressBarContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  progressBar: {
-    height: 6,
-    width: '80%',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#00A3FF',
-    borderRadius: 3,
-  },
-  hintText: {
-    color: '#888888',
-    fontSize: 14,
-  },
-});

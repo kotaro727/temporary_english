@@ -200,6 +200,7 @@ export const QuestionScreen: React.FC = () => {
               onToggleLanguage={toggleLanguage}
               isBookmarked={isCurrentQuestionBookmarked()}
               onToggleBookmark={toggleBookmark}
+              questionId={questions[currentIndex].id}
             />
 
             <NavigationButtons
