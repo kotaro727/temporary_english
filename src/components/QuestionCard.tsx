@@ -55,6 +55,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     };
   }, [questionId, fadeAnim, slideAnim]);
 
+  // 言語切り替え時に音声を停止
+  useEffect(() => {
+    Speech.stop();
+    setSpeaking(false);
+  }, [isJapanese]);
+
   // 表示するテキスト
   const displayText = isJapanese ? question.jp : question.en;
 
@@ -100,18 +106,20 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             />
           </TouchableOpacity>
 
-          {/* 音声再生ボタン */}
-          <TouchableOpacity
-            style={styles.speakerButton}
-            onPress={speak}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons
-              name={speaking ? 'volume-high' : 'volume-medium'}
-              size={24}
-              color={speaking ? '#00A3FF' : '#AAAAAA'}
-            />
-          </TouchableOpacity>
+          {/* 音声再生ボタン - 英語表示時のみ表示 */}
+          {!isJapanese && (
+            <TouchableOpacity
+              style={styles.speakerButton}
+              onPress={speak}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={speaking ? 'volume-high' : 'volume-medium'}
+                size={24}
+                color={speaking ? '#00A3FF' : '#AAAAAA'}
+              />
+            </TouchableOpacity>
+          )}
 
           {/* テキストコンテナ */}
           <View style={styles.textContainer}>
