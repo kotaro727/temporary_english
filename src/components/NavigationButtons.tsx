@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface NavigationButtonsProps {
   onPrev: () => void;
@@ -22,7 +23,10 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         disabled={isFirst}
         activeOpacity={0.7}
       >
-        <Text style={styles.buttonText}>前へ</Text>
+        <View style={styles.buttonContent}>
+          <Ionicons name="chevron-back" size={20} color={isFirst ? '#CCCCCC' : '#FFFFFF'} />
+          <Text style={styles.buttonText}>前へ</Text>
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -31,7 +35,10 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
         disabled={isLast}
         activeOpacity={0.7}
       >
-        <Text style={styles.nextButtonText}>次へ</Text>
+        <View style={styles.buttonContent}>
+          <Text style={styles.nextButtonText}>次へ</Text>
+          <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -41,35 +48,40 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 20,
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    width: '100%',
   },
   button: {
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 30,
     minWidth: 120,
-    alignItems: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    gap: 6, // アイコンとテキストの間隔
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  nextButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   prevButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#00A3FF',
+    backgroundColor: '#AAAAAA',
   },
   nextButton: {
     backgroundColor: '#00A3FF',
   },
   disabled: {
     opacity: 0.5,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#00A3FF',
-  },
-  nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });
